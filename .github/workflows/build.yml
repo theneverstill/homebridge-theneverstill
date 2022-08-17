@@ -1,11 +1,11 @@
 name: Build and Lint
 
 on:
+  pull_request:
+    types: [opened, reopened, synchronize]
   push:
     branches:
       - "master"
-  pull:
-    types: [opened, reopened, synchronize]
 
 jobs:
   build:
