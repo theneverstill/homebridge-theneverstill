@@ -1,0 +1,16 @@
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+    authors:
+      - dependabot
+  categories:
+    - title: Breaking Changes 🚀
+      labels:
+        - Semver-Major
+    - title: Exciting New Features 🎉
+      labels:
+        - Semver-Minor
+    - title: Other Changes
+      labels:
+        - "*"
