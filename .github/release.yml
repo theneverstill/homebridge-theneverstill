@@ -1,16 +1,16 @@
 changelog:
   exclude:
     labels:
-      - ignore-for-release
+      - "PR: Ignore For Release"
     authors:
       - dependabot
   categories:
     - title: Breaking Changes 🚀
       labels:
-        - Semver-Major
+        - "PR: Semver Major"
     - title: Exciting New Features 🎉
       labels:
-        - Semver-Minor
+        - "PR: Semver Minor"
     - title: Other Changes
       labels:
         - "*"
