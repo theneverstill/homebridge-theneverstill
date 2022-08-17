@@ -1,6 +1,11 @@
 name: Build and Lint
 
-on: [push, pull_request]
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+  push:
+    branches:
+      - master
 
 jobs:
   build:
@@ -8,8 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        # the Node.js versions to build on
-        node-version: [12.x, 13.x, 14.x, 15.x, 16.x]
+        node-version: [14.x, 16.x, 18.x]
 
     steps:
       - uses: actions/checkout@v2
@@ -20,7 +24,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Lint the project
         run: npm run lint

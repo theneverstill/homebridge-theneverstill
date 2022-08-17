@@ -1,15 +1,45 @@
 {
-  "pluginAlias": "ExampleHomebridgePlugin",
-  "pluginType": "platform",
-  "singular": true,
+  "pluginAlias": "TheNeverStill",
+  "pluginType": "accessory",
+  "singular": false,
   "schema": {
     "type": "object",
     "properties": {
-      "name": {
-        "title": "Name",
+      "uuid": {
+        "title": "UUID",
+        "description": "The UUID for the accessory in Homebridge and the initial display name for the accessory in HomeKit. DO NOT CHANGE THIS VALUE after creating the accessory or it will delete your previous accessory and create a new one. It is safe to rename the accessory in HomeKit, but not here in Homebridge. You can generate a UUID here: https://www.uuidgenerator.net",
+        "placeholder": "00000000-0000-0000-0000-000000000000",
         "type": "string",
         "required": true,
-        "default": "Example Dynamic Platform"
+        "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+      },
+      "name": {
+        "title": "Name (in Homebridge)",
+        "description": "The name for the accessory in Homebridge. Unlike the UUID above, it is safe to change this value after creating the accessory.",
+        "placeholder": "Accessory Name",
+        "type": "string",
+        "required": true
+      },
+      "defaultState": {
+        "title": "Default State",
+        "description": "The default state of the switch. True is on. False is off. This is the initial state of the switch as well as the state the switch will be set to when the timer hits zero.",
+        "type": "boolean",
+        "default": false
+      },
+      "defaultStateResetTime": {
+        "title": "Default State Reset Time (in milliseconds)",
+        "description": "The number of milliseconds until the switch will reset to its default state. To disable the reset time set this value to -1.",
+        "placeholder": 1000,
+        "type": "number",
+        "required": true,
+        "default": 1000,
+        "minimum": -1
+      },
+      "isDefaultStateResetTimeResettable": {
+        "title": "Is Default State Reset Time Resettable",
+        "description": "Whether or not the default state reset time will reset each time the switch is turned on.",
+        "type": "boolean",
+        "default": false
       }
     }
   }
