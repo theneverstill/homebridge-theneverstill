@@ -12,4 +12,6 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: daily
+    labels:
+      - "PR: Ignore For Release"

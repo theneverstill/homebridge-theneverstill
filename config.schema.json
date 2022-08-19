@@ -5,41 +5,93 @@
   "schema": {
     "type": "object",
     "properties": {
-      "uuid": {
-        "title": "UUID",
-        "description": "The UUID for the accessory in Homebridge and the initial display name for the accessory in HomeKit. DO NOT CHANGE THIS VALUE after creating the accessory or it will delete your previous accessory and create a new one. It is safe to rename the accessory in HomeKit, but not here in Homebridge. You can generate a UUID here: https://www.uuidgenerator.net",
-        "placeholder": "00000000-0000-0000-0000-000000000000",
-        "type": "string",
-        "required": true,
-        "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
-      },
       "name": {
-        "title": "Name (in Homebridge)",
-        "description": "The name for the accessory in Homebridge. Unlike the UUID above, it is safe to change this value after creating the accessory.",
-        "placeholder": "Accessory Name",
+        "title": "Accessory Name",
+        "description": "The name for the accessory. DO NOT CHANGE THIS VALUE after creating the accessory or it will delete your accessory and create a new one.",
+        "placeholder": "E.g. TNS Clock",
         "type": "string",
         "required": true
       },
-      "defaultState": {
-        "title": "Default State",
-        "description": "The default state of the switch. True is on. False is off. This is the initial state of the switch as well as the state the switch will be set to when the timer hits zero.",
+      "isDebugLoggingEnabled": {
+        "title": "Enable Debug Logging",
+        "description": "Whether or not debug messages are sent to Homebridge logs.",
         "type": "boolean",
         "default": false
       },
-      "defaultStateResetTime": {
-        "title": "Default State Reset Time (in milliseconds)",
-        "description": "The number of milliseconds until the switch will reset to its default state. To disable the reset time set this value to -1.",
-        "placeholder": 1000,
+      "switchOneIsCreatable": {
+        "title": "[Switch One] Create Switch One",
+        "description": "Whether or not to create Switch One as part of this accessory. True (this checkbox is toggled) means Switch One is added to this accessory. False (this checkbox is NOT toggled) means Switch One is NOT added to this accessory.",
+        "type": "boolean",
+        "default": false
+      },
+      "switchOneDefaultState": {
+        "title": "[Switch One] Default State Is On",
+        "description": "The default state of the switch. True (this checkbox is toggled) is on. False (this checkbox is NOT toggled) is off. This is the initial state of the switch as well as the state the switch will revert to when the default state revert timer expires (if enabled).",
+        "type": "boolean",
+        "default": false
+      },
+      "switchOneDefaultStateRevertTime": {
+        "title": "[Switch One] Default State Revert Time (in milliseconds)",
+        "description": "The number of milliseconds until the switch will revert to its default state. Set this value to 0 to immediately revert back to the default state. Set this value to -1 (or leave it empty) to disable this functionality.",
         "type": "number",
-        "required": true,
-        "default": 1000,
+        "placeholder": "E.g. 1000",
         "minimum": -1
       },
-      "isDefaultStateResetTimeResettable": {
-        "title": "Is Default State Reset Time Resettable",
-        "description": "Whether or not the default state reset time will reset each time the switch is turned on.",
+      "switchOneIsDefaultStateRevertTimeResettable": {
+        "title": "[Switch One] Is Default State Revert Time Resettable",
+        "description": "Whether or not the default state revert time will reset whenever the switch is turned on.",
+        "type": "boolean",
+        "default": true
+      },
+      "switchTwoIsCreatable": {
+        "title": "[Switch Two] Create Switch Two",
+        "description": "Whether or not to create Switch Two as part of this accessory. True (this checkbox is toggled) means Switch Two is added to this accessory. False (this checkbox is NOT toggled) means Switch Two is NOT added to this accessory.",
         "type": "boolean",
         "default": false
+      },
+      "switchTwoDefaultState": {
+        "title": "[Switch Two] Default State Is On",
+        "description": "The default state of the switch. True (this checkbox is toggled) is on. False (this checkbox is NOT toggled) is off. This is the initial state of the switch as well as the state the switch will revert to when the default state revert timer expires (if enabled).",
+        "type": "boolean",
+        "default": false
+      },
+      "switchTwoDefaultStateRevertTime": {
+        "title": "[Switch Two] Default State Revert Time (in milliseconds)",
+        "description": "The number of milliseconds until the switch will revert to its default state. Set this value to 0 to immediately revert back to the default state. Set this value to -1 (or leave it empty) to disable this functionality.",
+        "type": "number",
+        "placeholder": "E.g. 1000",
+        "minimum": -1
+      },
+      "switchTwoIsDefaultStateRevertTimeResettable": {
+        "title": "[Switch Two] Is Default State Revert Time Resettable",
+        "description": "Whether or not the default state revert time will reset whenever the switch is turned on.",
+        "type": "boolean",
+        "default": true
+      },
+      "switchThreeIsCreatable": {
+        "title": "[Switch Three] Create Switch Three",
+        "description": "Whether or not to create Switch Three as part of this accessory. True (this checkbox is toggled) means Switch Three is added to this accessory. False (this checkbox is NOT toggled) means Switch Three is NOT added to this accessory.",
+        "type": "boolean",
+        "default": false
+      },
+      "switchThreeDefaultState": {
+        "title": "[Switch Three] Default State Is On",
+        "description": "The default state of the switch. True (this checkbox is toggled) is on. False (this checkbox is NOT toggled) is off. This is the initial state of the switch as well as the state the switch will revert to when the default state revert timer expires (if enabled).",
+        "type": "boolean",
+        "default": false
+      },
+      "switchThreeDefaultStateRevertTime": {
+        "title": "[Switch Three] Default State Revert Time (in milliseconds)",
+        "description": "The number of milliseconds until the switch will revert to its default state. Set this value to 0 to immediately revert back to the default state. Set this value to -1 (or leave it empty) to disable this functionality.",
+        "type": "number",
+        "placeholder": "E.g. 1000",
+        "minimum": -1
+      },
+      "switchThreeIsDefaultStateRevertTimeResettable": {
+        "title": "[Switch Three] Is Default State Revert Time Resettable",
+        "description": "Whether or not the default state revert time will reset whenever the switch is turned on.",
+        "type": "boolean",
+        "default": true
       }
     }
   }

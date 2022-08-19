@@ -35,6 +35,15 @@ import type {
  */
 import { CharacteristicEventTypes, HAPStatus } from "homebridge";
 
+interface SwitchServiceConfig {
+  defaultState: boolean;
+  defaultStateRevertTime: number;
+  isDebugLoggingEnabled: boolean;
+  isDefaultStateRevertTimeResettable: boolean;
+  name: string;
+  subName: string;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version } = require("../package.json");
 
@@ -57,15 +66,14 @@ export = (api: API) => {
 
 class TheNeverStillAccessory implements AccessoryPlugin {
   private readonly accessoryConfig: AccessoryConfig;
-  private readonly accessoryInformationService: Service;
-  private readonly switchService: Service;
+  private readonly services: Service[] = [];
 
   private readonly cacheDirectory: string;
   private readonly storage: any;
 
   constructor(log: Logging, accessoryConfig: AccessoryConfig, api: API) {
-    // TODO: Set default values on accessoryConfig
-    // e.g. accessoryConfig.time = accessoryConfig.time ?? 1000;
+    log.info(`Initializing accessory...`);
+
     this.accessoryConfig = accessoryConfig;
 
     this.cacheDirectory = api.user.persistPath();
@@ -76,18 +84,76 @@ class TheNeverStillAccessory implements AccessoryPlugin {
       forgiveParseErrors: true,
     });
 
-    this.accessoryInformationService =
+    this.services.push(
       TheNeverStillAccessory.createAccessoryInformationService({
         accessoryConfig,
-      });
+      }),
+    );
 
-    this.switchService = TheNeverStillAccessory.createSwitchService({
-      accessoryConfig,
-      log,
-      storage: this.storage,
-    });
+    if (!!accessoryConfig.switchOneIsCreatable) {
+      this.services.push(
+        TheNeverStillAccessory.createSwitchService({
+          config: {
+            defaultState: accessoryConfig.switchOneDefaultState ?? false,
+            defaultStateRevertTime:
+              accessoryConfig.switchOneDefaultStateRevertTime ?? -1,
+            isDebugLoggingEnabled:
+              accessoryConfig.isDebugLoggingEnabled ?? false,
+            isDefaultStateRevertTimeResettable:
+              accessoryConfig.switchOneIsDefaultStateRevertTimeResettable ??
+              false,
+            name: accessoryConfig.name,
+            subName: "switchOne",
+          },
+          log,
+          storage: this.storage,
+        }),
+      );
+    }
 
-    log.info(`Switch finished initializing.`);
+    if (!!accessoryConfig.switchTwoIsCreatable) {
+      this.services.push(
+        TheNeverStillAccessory.createSwitchService({
+          config: {
+            defaultState: accessoryConfig.switchTwoDefaultState ?? false,
+            defaultStateRevertTime:
+              accessoryConfig.switchTwoDefaultStateRevertTime ?? -1,
+            isDebugLoggingEnabled:
+              accessoryConfig.isDebugLoggingEnabled ?? false,
+            isDefaultStateRevertTimeResettable:
+              accessoryConfig.switchTwoIsDefaultStateRevertTimeResettable ??
+              false,
+            name: accessoryConfig.name,
+            subName: "switchTwo",
+          },
+          log,
+          storage: this.storage,
+        }),
+      );
+    }
+
+    if (!!accessoryConfig.switchThreeIsCreatable) {
+      this.services.push(
+        TheNeverStillAccessory.createSwitchService({
+          config: {
+            defaultState: accessoryConfig.switchThreeDefaultState ?? false,
+            defaultStateRevertTime:
+              accessoryConfig.switchThreeDefaultStateRevertTime ?? -1,
+            isDebugLoggingEnabled:
+              accessoryConfig.isDebugLoggingEnabled ?? false,
+            isDefaultStateRevertTimeResettable:
+              accessoryConfig.switchThreeIsDefaultStateRevertTimeResettable ??
+              false,
+            name: accessoryConfig.name,
+            subName: "switchThree",
+          },
+          log,
+          storage: this.storage,
+        }),
+      );
+    }
+
+    log.info(`Finished initializing accessory.`);
   }
 
   /*
@@ -95,7 +161,7 @@ class TheNeverStillAccessory implements AccessoryPlugin {
    * It should return all services which should be added to the accessory.
    */
   getServices(): Service[] {
-    return [this.accessoryInformationService, this.switchService];
+    return this.services;
   }
 
   private static createAccessoryInformationService({
@@ -122,26 +188,26 @@ class TheNeverStillAccessory implements AccessoryPlugin {
   }
 
   private static createSwitchService({
-    accessoryConfig,
+    config,
     log,
     storage,
   }: {
-    accessoryConfig: AccessoryConfig;
+    config: SwitchServiceConfig;
     log: Logging;
     storage: any;
   }): Switch {
-    const switchService = new hap.Service.Switch(accessoryConfig.uuid);
+    const switchService = new hap.Service.Switch(config.name, config.subName);
 
-    let currentState: boolean = accessoryConfig.defaultState;
+    const storageIdCurrentState = `${config.name}.${config.subName}.currentState`;
+
+    let currentState: boolean = config.defaultState;
     let timeout: NodeJS.Timeout | null = null;
 
-    const cachedState: boolean = storage.getItemSync(
-      `${accessoryConfig.uuid}.currentState`,
-    );
+    // Set or reset current state (if applicable) on Homebridge start
+    const cachedState: boolean = storage.getItemSync(storageIdCurrentState);
     if (cachedState === true || cachedState === false) {
       currentState = cachedState;
     }
-
     switchService.setCharacteristic(hap.Characteristic.On, currentState);
 
     switchService
@@ -149,11 +215,14 @@ class TheNeverStillAccessory implements AccessoryPlugin {
       .on(
         CharacteristicEventTypes.GET,
         (callback: CharacteristicGetCallback) => {
-          log.info(
-            `[${accessoryConfig.name}] Get current state: ${
-              currentState ? "ON" : "OFF"
-            }`,
-          );
+          if (config.isDebugLoggingEnabled) {
+            log.info(
+              `[${config.subName}][debug] Get current state: ${
+                currentState ? "ON" : "OFF"
+              }`,
+            );
+          }
+
           callback(HAPStatus.SUCCESS, currentState);
         },
       )
@@ -162,38 +231,53 @@ class TheNeverStillAccessory implements AccessoryPlugin {
         (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
           currentState = value as boolean;
 
-          log.info(
-            `[${accessoryConfig.name}] Set current state: ${
+          log.debug(
+            `[${config.subName}][debug] Set current state: ${
               currentState ? "ON" : "OFF"
             }`,
           );
 
-          if (currentState !== accessoryConfig.defaultState) {
-            if (
-              accessoryConfig.isDefaultStateResetTimeResettable &&
-              !!timeout
-            ) {
+          if (currentState !== config.defaultState) {
+            if (config.isDefaultStateRevertTimeResettable && !!timeout) {
+              // Clear existing timeout if it is resettable
               clearTimeout(timeout);
+              timeout = null;
             }
 
-            timeout = setTimeout(() => {
-              switchService.setCharacteristic(
-                hap.Characteristic.On,
-                accessoryConfig.defaultState,
-              );
-            }, accessoryConfig.defaultStateResetTime);
+            if (!timeout && config.defaultStateRevertTime >= 0) {
+              // Set a timeout only if one doesn't already exist and defaultStateRevertTime isn't -1
+              timeout = setTimeout(() => {
+                switchService.setCharacteristic(
+                  hap.Characteristic.On,
+                  config.defaultState,
+                );
+              }, config.defaultStateRevertTime);
+            }
           } else if (!!timeout) {
+            // Clear timeout if it exists since current state matches default state
             clearTimeout(timeout);
+            timeout = null;
           }
 
-          storage.setItemSync(
-            `${accessoryConfig.uuid}.currentState`,
-            currentState,
-          );
+          storage.setItemSync(storageIdCurrentState, currentState);
 
           callback(HAPStatus.SUCCESS);
         },
       );
+
+    if (
+      !timeout &&
+      currentState !== config.defaultState &&
+      config.defaultStateRevertTime >= 0
+    ) {
+      // Reset timers (if applicable) on Homebridge start
+      timeout = setTimeout(() => {
+        switchService.setCharacteristic(
+          hap.Characteristic.On,
+          config.defaultState,
+        );
+      }, config.defaultStateRevertTime);
+    }
 
     return switchService;
   }

@@ -2,7 +2,7 @@
   "private": false,
   "displayName": "Homebridge TheNeverStill",
   "name": "homebridge-theneverstill",
-  "version": "0.0.1",
+  "version": "0.0.9",
   "description": "Homebridge plugin to add critical functionality to your HomeKit home.",
   "license": "Apache-2.0",
   "repository": {
