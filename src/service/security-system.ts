@@ -241,16 +241,16 @@ export function createSecuritySystemService({
           targetState,
         });
 
-        log.info(
-          `[${config.subName}][debug]: ${onCharacteristic} || ${currentState} || ${targetState} || ${newCurrentState}`,
-        );
-
         if (currentState !== newCurrentState) {
           currentState = newCurrentState;
 
           if (config.isDebugLoggingEnabled) {
             log.info(
-              `[${config.subName}][debug] Set current state: ${newCurrentState}`,
+              `[${
+                config.subName
+              }][debug] Set current state: ${convertSecuritySystemCurrentStateToString(
+                { hap, log, state: currentState },
+              )}`,
             );
           }
 
@@ -280,19 +280,17 @@ function determineNewCurrentState({
 }): number {
   let newCurrentState = currentState;
 
-  if (
+  if (targetState === hap.Characteristic.SecuritySystemTargetState.DISARM) {
+    newCurrentState = hap.Characteristic.SecuritySystemCurrentState.DISARMED;
+  } else if (
     onCharacteristic &&
-    targetState === hap.Characteristic.SecuritySystemTargetState.STAY_ARM &&
-    currentState !==
-      hap.Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED
+    targetState === hap.Characteristic.SecuritySystemTargetState.STAY_ARM
   ) {
     newCurrentState =
       hap.Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED;
   } else if (
     !onCharacteristic &&
-    targetState === hap.Characteristic.SecuritySystemTargetState.STAY_ARM &&
-    currentState ===
-      hap.Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED
+    targetState === hap.Characteristic.SecuritySystemTargetState.STAY_ARM
   ) {
     newCurrentState = hap.Characteristic.SecuritySystemCurrentState.STAY_ARM;
   }
