@@ -19,7 +19,7 @@
         "default": false
       },
       "switchOneIsCreatable": {
-        "title": "[Switch One] Create Switch One",
+        "title": "[Switch One] Create Switch",
         "description": "Whether or not to create Switch One as part of this accessory. True (this checkbox is toggled) means Switch One is added to this accessory. False (this checkbox is NOT toggled) means Switch One is NOT added to this accessory.",
         "type": "boolean",
         "default": false
@@ -44,7 +44,7 @@
         "default": true
       },
       "switchTwoIsCreatable": {
-        "title": "[Switch Two] Create Switch Two",
+        "title": "[Switch Two] Create Switch",
         "description": "Whether or not to create Switch Two as part of this accessory. True (this checkbox is toggled) means Switch Two is added to this accessory. False (this checkbox is NOT toggled) means Switch Two is NOT added to this accessory.",
         "type": "boolean",
         "default": false
@@ -69,7 +69,7 @@
         "default": true
       },
       "switchThreeIsCreatable": {
-        "title": "[Switch Three] Create Switch Three",
+        "title": "[Switch Three] Create Switch",
         "description": "Whether or not to create Switch Three as part of this accessory. True (this checkbox is toggled) means Switch Three is added to this accessory. False (this checkbox is NOT toggled) means Switch Three is NOT added to this accessory.",
         "type": "boolean",
         "default": false
@@ -89,6 +89,31 @@
       },
       "switchThreeIsDefaultStateRevertTimeResettable": {
         "title": "[Switch Three] Is Default State Revert Time Resettable",
+        "description": "Whether or not the default state revert time will reset whenever the switch is turned on.",
+        "type": "boolean",
+        "default": true
+      },
+      "securitySystemOneIsCreatable": {
+        "title": "[Security System One] Create Security System One",
+        "description": "Whether or not to create Security System One as part of this accessory. True (this checkbox is toggled) means Security System One is added to this accessory. False (this checkbox is NOT toggled) means Security System One is NOT added to this accessory.",
+        "type": "boolean",
+        "default": false
+      },
+      "securitySystemOneSwitchDefaultState": {
+        "title": "[Security System One] Switch Default State Is On",
+        "description": "The default state of the switch. True (this checkbox is toggled) is on. False (this checkbox is NOT toggled) is off. This is the initial state of the switch as well as the state the switch will revert to when the default state revert timer expires (if enabled).",
+        "type": "boolean",
+        "default": false
+      },
+      "securitySystemOneSwitchDefaultStateRevertTime": {
+        "title": "[Security System One] Switch Default State Revert Time (in milliseconds)",
+        "description": "The number of milliseconds until the switch will revert to its default state. Set this value to 0 to immediately revert back to the default state. Set this value to -1 (or leave it empty) to disable this functionality.",
+        "type": "number",
+        "placeholder": "E.g. 1000",
+        "minimum": -1
+      },
+      "securitySystemOneSwitchIsDefaultStateRevertTimeResettable": {
+        "title": "[Security System One] Switch Is Default State Revert Time Resettable",
         "description": "Whether or not the default state revert time will reset whenever the switch is turned on.",
         "type": "boolean",
         "default": true
