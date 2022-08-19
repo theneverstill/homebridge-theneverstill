@@ -234,6 +234,14 @@ export function createSecuritySystemService({
       (change: CharacteristicChange): void => {
         const onCharacteristic = change.newValue as boolean;
 
+        if (
+          onCharacteristic &&
+          targetState === hap.Characteristic.SecuritySystemTargetState.DISARM
+        ) {
+          switchService.setCharacteristic(hap.Characteristic.On, false);
+          return;
+        }
+
         const newCurrentState = determineNewCurrentState({
           currentState,
           hap,
