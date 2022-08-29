@@ -142,6 +142,8 @@ class TheNeverStillAccessory implements AccessoryPlugin {
             isDebugLoggingEnabled:
               accessoryConfig?.isDebugLoggingEnabled ?? false,
             name: accessoryConfig.name,
+            retriggerTime:
+              accessoryConfig?.securitySystemOneRetriggerTime ?? -1,
             subName: "securitySystemOne",
           },
           hap,

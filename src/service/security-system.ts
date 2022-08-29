@@ -27,67 +27,6 @@ import type { SecuritySystem, Switch } from "hap-nodejs/dist/lib/definitions";
  */
 import { CharacteristicEventTypes } from "homebridge";
 
-function convertSecuritySystemCurrentStateToString({
-  hap,
-  log,
-  state,
-}: {
-  hap: HAP;
-  log: Logging;
-  state: number;
-}): string {
-  switch (state) {
-    case hap.Characteristic.SecuritySystemCurrentState.STAY_ARM: {
-      return "STAY_ARM";
-    }
-    case hap.Characteristic.SecuritySystemCurrentState.AWAY_ARM: {
-      return "AWAY_ARM";
-    }
-    case hap.Characteristic.SecuritySystemCurrentState.NIGHT_ARM: {
-      return "NIGHT_ARM";
-    }
-    case hap.Characteristic.SecuritySystemCurrentState.DISARMED: {
-      return "DISARMED";
-    }
-    case hap.Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED: {
-      return "ALARM_TRIGGERED";
-    }
-    default: {
-      log.error(`Unexpected SecuritySystemCurrentState: ${state}`);
-      return "";
-    }
-  }
-}
-
-function convertSecuritySystemTargetStateToString({
-  hap,
-  log,
-  state,
-}: {
-  hap: HAP;
-  log: Logging;
-  state: number;
-}): string {
-  switch (state) {
-    case hap.Characteristic.SecuritySystemTargetState.STAY_ARM: {
-      return "STAY_ARM";
-    }
-    case hap.Characteristic.SecuritySystemTargetState.AWAY_ARM: {
-      return "AWAY_ARM";
-    }
-    case hap.Characteristic.SecuritySystemTargetState.NIGHT_ARM: {
-      return "NIGHT_ARM";
-    }
-    case hap.Characteristic.SecuritySystemTargetState.DISARM: {
-      return "DISARM";
-    }
-    default: {
-      log.error(`Unexpected SecuritySystemTargetState: ${state}`);
-      return "";
-    }
-  }
-}
-
 export function createSecuritySystemService({
   config,
   hap,
@@ -98,6 +37,7 @@ export function createSecuritySystemService({
   config: {
     isDebugLoggingEnabled: boolean;
     name: string;
+    retriggerTime: number;
     subName: string;
   };
   hap: HAP;
@@ -105,10 +45,17 @@ export function createSecuritySystemService({
   storage: any;
   switchService: Switch;
 }): SecuritySystem {
+  // If enabled, enforce a minimum of 1 second
+  if (config.retriggerTime >= 0 && config.retriggerTime < 1000) {
+    config.retriggerTime = 1000;
+  }
+
   const securitySystemService = new hap.Service.SecuritySystem(
     config.name,
     config.subName,
   );
+
+  let timeout: NodeJS.Timeout | null = null;
 
   const storageIdCurrentState = `${config.name}.${config.subName}.currentState`;
   const storageIdTargetState = `${config.name}.${config.subName}.targetState`;
@@ -238,7 +185,22 @@ export function createSecuritySystemService({
           onCharacteristic &&
           targetState === hap.Characteristic.SecuritySystemTargetState.DISARM
         ) {
+          if (config.isDebugLoggingEnabled) {
+            log.info(
+              `[${
+                config.subName
+              }][debug] Trying to turn on switch when current state is: ${convertSecuritySystemCurrentStateToString(
+                { hap, log, state: currentState },
+              )}`,
+            );
+          }
+
           switchService.setCharacteristic(hap.Characteristic.On, false);
+
+          if (!!timeout) {
+            clearTimeout(timeout);
+            timeout = null;
+          }
           return;
         }
 
@@ -269,8 +231,41 @@ export function createSecuritySystemService({
 
           storage.setItemSync(storageIdCurrentState, currentState);
         }
+
+        if (
+          !timeout &&
+          currentState ===
+            hap.Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED &&
+          config.retriggerTime >= 0
+        ) {
+          timeout = setTimeout(retriggerSwitchService, config.retriggerTime, {
+            config,
+            log,
+            hap,
+            switchService,
+          });
+        } else if (!!timeout) {
+          clearTimeout(timeout);
+          timeout = null;
+        }
       },
     );
+
+  // Reset timeout (if applicable) on Homebridge start
+  if (
+    !timeout &&
+    (switchService.getCharacteristic(hap.Characteristic.On).value as boolean) &&
+    currentState ===
+      hap.Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED &&
+    config.retriggerTime >= 0
+  ) {
+    timeout = setTimeout(retriggerSwitchService, config.retriggerTime, {
+      config,
+      log,
+      hap,
+      switchService,
+    });
+  }
 
   return securitySystemService;
 }
@@ -304,4 +299,88 @@ function determineNewCurrentState({
   }
 
   return newCurrentState;
+}
+
+function retriggerSwitchService({
+  config,
+  log,
+  hap,
+  switchService,
+}: {
+  config: {
+    isDebugLoggingEnabled: boolean;
+    subName: string;
+  };
+  log: Logging;
+  hap: HAP;
+  switchService: Switch;
+}): void {
+  if (config.isDebugLoggingEnabled) {
+    log.info(`[${config.subName}][debug] Retriggering...`);
+  }
+  switchService.setCharacteristic(hap.Characteristic.On, false);
+  setTimeout((): void => {
+    switchService.setCharacteristic(hap.Characteristic.On, true);
+  }, 1000);
+}
+
+function convertSecuritySystemCurrentStateToString({
+  hap,
+  log,
+  state,
+}: {
+  hap: HAP;
+  log: Logging;
+  state: number;
+}): string {
+  switch (state) {
+    case hap.Characteristic.SecuritySystemCurrentState.STAY_ARM: {
+      return "STAY_ARM";
+    }
+    case hap.Characteristic.SecuritySystemCurrentState.AWAY_ARM: {
+      return "AWAY_ARM";
+    }
+    case hap.Characteristic.SecuritySystemCurrentState.NIGHT_ARM: {
+      return "NIGHT_ARM";
+    }
+    case hap.Characteristic.SecuritySystemCurrentState.DISARMED: {
+      return "DISARMED";
+    }
+    case hap.Characteristic.SecuritySystemCurrentState.ALARM_TRIGGERED: {
+      return "ALARM_TRIGGERED";
+    }
+    default: {
+      log.error(`Unexpected SecuritySystemCurrentState: ${state}`);
+      return "";
+    }
+  }
+}
+
+function convertSecuritySystemTargetStateToString({
+  hap,
+  log,
+  state,
+}: {
+  hap: HAP;
+  log: Logging;
+  state: number;
+}): string {
+  switch (state) {
+    case hap.Characteristic.SecuritySystemTargetState.STAY_ARM: {
+      return "STAY_ARM";
+    }
+    case hap.Characteristic.SecuritySystemTargetState.AWAY_ARM: {
+      return "AWAY_ARM";
+    }
+    case hap.Characteristic.SecuritySystemTargetState.NIGHT_ARM: {
+      return "NIGHT_ARM";
+    }
+    case hap.Characteristic.SecuritySystemTargetState.DISARM: {
+      return "DISARM";
+    }
+    default: {
+      log.error(`Unexpected SecuritySystemTargetState: ${state}`);
+      return "";
+    }
+  }
 }

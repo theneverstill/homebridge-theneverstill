@@ -10,6 +10,7 @@
         "description": "The name for the accessory. DO NOT CHANGE THIS VALUE after creating the accessory or it will delete your accessory and create a new one.",
         "placeholder": "E.g. TNS Clock",
         "type": "string",
+        "maxLength": 48,
         "required": true
       },
       "isDebugLoggingEnabled": {
@@ -98,6 +99,13 @@
         "description": "Whether or not to create Security System One as part of this accessory. True (this checkbox is toggled) means Security System One is added to this accessory. False (this checkbox is NOT toggled) means Security System One is NOT added to this accessory.",
         "type": "boolean",
         "default": false
+      },
+      "securitySystemOneRetriggerTime": {
+        "title": "[Security System One] Retrigger Time (in milliseconds)",
+        "description": "The number of milliseconds until a triggered security system will retrigger. Set this value to -1 (or leave it empty) to disable this functionality.",
+        "type": "number",
+        "placeholder": "E.g. 1000",
+        "minimum": -1
       },
       "securitySystemOneSwitchDefaultState": {
         "title": "[Security System One] Switch Default State Is On",

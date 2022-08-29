@@ -23,10 +23,10 @@ export function createSwitchService({
 }): Switch {
   const switchService = new hap.Service.Switch(config.name, config.subName);
 
-  const storageIdOnCharacteristic = `${config.name}.${config.subName}.onCharacteristic`;
-
   let onCharacteristic: boolean = config.defaultState;
   let timeout: NodeJS.Timeout | null = null;
+
+  const storageIdOnCharacteristic = `${config.name}.${config.subName}.onCharacteristic`;
 
   // Set or reset on characteristic (if applicable) on Homebridge start
   const cachedOnCharacteristic: boolean = storage.getItemSync(
@@ -63,13 +63,13 @@ export function createSwitchService({
       }
 
       if (onCharacteristic !== config.defaultState) {
-        if (config.isDefaultStateRevertTimeResettable && !!timeout) {
+        if (!!timeout) {
           clearTimeout(timeout);
           timeout = null;
         }
 
         if (!timeout && config.defaultStateRevertTime >= 0) {
-          timeout = setTimeout(() => {
+          timeout = setTimeout((): void => {
             switchService.setCharacteristic(
               hap.Characteristic.On,
               config.defaultState,
@@ -84,13 +84,13 @@ export function createSwitchService({
       storage.setItemSync(storageIdOnCharacteristic, onCharacteristic);
     });
 
-  // Reset timers (if applicable) on Homebridge start
+  // Reset timeout (if applicable) on Homebridge start
   if (
     !timeout &&
     onCharacteristic !== config.defaultState &&
     config.defaultStateRevertTime >= 0
   ) {
-    timeout = setTimeout(() => {
+    timeout = setTimeout((): void => {
       switchService.setCharacteristic(
         hap.Characteristic.On,
         config.defaultState,
